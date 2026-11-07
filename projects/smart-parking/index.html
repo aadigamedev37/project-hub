@@ -1,0 +1,796 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SmartPark | Live Intelligent Parking Management Engine</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Tailwind CSS via Official Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50: '#ecfdf5',
+              400: '#34d399',
+              500: '#10b981',
+              600: '#059669',
+              700: '#047857',
+            },
+            dark: {
+              950: '#06090e',
+              900: '#0c121d',
+              850: '#111927',
+              800: '#162032',
+              700: '#1f2e47',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #06090e;
+      color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .glass-nav {
+      background: rgba(12, 18, 29, 0.82);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card {
+      background: rgba(17, 25, 39, 0.72);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card:hover {
+      border-color: rgba(52, 211, 153, 0.25);
+    }
+    .glass-slot-available {
+      background: rgba(16, 185, 129, 0.08);
+      border: 1px solid rgba(16, 185, 129, 0.22);
+    }
+    .glass-slot-available:hover {
+      background: rgba(16, 185, 129, 0.16);
+      border-color: rgba(52, 211, 153, 0.6);
+      box-shadow: 0 0 25px rgba(16, 185, 129, 0.2);
+    }
+    .glass-slot-occupied {
+      background: rgba(244, 63, 94, 0.06);
+      border: 1px solid rgba(244, 63, 94, 0.22);
+    }
+    .glass-slot-maintenance {
+      background: rgba(100, 116, 139, 0.06);
+      border: 1px solid rgba(100, 116, 139, 0.18);
+    }
+    .ticket-sawtooth {
+      background: radial-gradient(circle, transparent, transparent 50%, #111927 50%, #111927 100%);
+      background-size: 16px 16px;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-dark-950 text-slate-100 antialiased selection:bg-emerald-500 selection:text-slate-950">
+
+  <!-- =========================================================================
+       NAVIGATION BAR
+       ========================================================================= -->
+  <nav class="sticky top-0 z-50 glass-nav">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Brand Logo -->
+        <div class="flex items-center space-x-3">
+          <a href="./" class="flex items-center space-x-3 group">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-emerald-500 to-teal-400 p-0.5 shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform duration-300">
+              <div class="w-full h-full bg-dark-950 rounded-[14px] flex items-center justify-center">
+                <i class="fa-solid fa-square-parking text-emerald-400 text-2xl"></i>
+              </div>
+            </div>
+            <div>
+              <div class="flex items-center space-x-2">
+                <span class="text-xl font-extrabold tracking-tight text-white">Smart<span class="text-emerald-400">Park</span></span>
+                <span class="px-2 py-0.5 text-[10px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-md tracking-wider">LIVE v2.4</span>
+              </div>
+              <p class="text-[11px] text-slate-400 font-mono tracking-wide">Intelligent Bay Allocation</p>
+            </div>
+          </a>
+        </div>
+
+        <!-- Navigation Links -->
+        <div class="hidden md:flex items-center space-x-1">
+          <button onclick="switchView('driver')" id="nav-btn-driver" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 flex items-center space-x-2">
+            <i class="fa-solid fa-table-cells text-emerald-400"></i>
+            <span>Parking Grid</span>
+          </button>
+          <button onclick="openBookingModal()" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all flex items-center space-x-2">
+            <i class="fa-solid fa-car"></i>
+            <span>Book a Slot</span>
+          </button>
+          <button onclick="openCancelModal()" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-300 hover:text-white hover:bg-white/5 transition-all flex items-center space-x-2">
+            <i class="fa-solid fa-ticket"></i>
+            <span>Cancel / Find Pass</span>
+          </button>
+          <button onclick="switchView('admin')" id="nav-btn-admin" class="px-3.5 py-2 rounded-xl text-xs font-semibold text-amber-400/90 hover:bg-amber-400/10 transition-all flex items-center space-x-2">
+            <i class="fa-solid fa-shield-halved"></i>
+            <span>Admin Portal</span>
+          </button>
+        </div>
+
+        <!-- Hub Return & Quick Book -->
+        <div class="flex items-center space-x-3">
+          <a href="../../" class="text-xs text-slate-400 hover:text-slate-200 px-3 py-2 rounded-xl border border-white/10 hover:bg-white/5 hidden sm:inline-flex items-center space-x-1.5 transition-all">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Hub</span>
+          </a>
+          <button onclick="quickBookFirstAvailable()" class="px-4 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-400 hover:from-emerald-400 hover:to-teal-300 text-slate-950 font-bold text-xs tracking-wide shadow-lg shadow-emerald-500/25 hover:shadow-emerald-500/40 hover:-translate-y-0.5 transition-all flex items-center space-x-2">
+            <i class="fa-solid fa-bolt"></i>
+            <span>Park Vehicle Now</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- =========================================================================
+       MAIN CONTENT CONTAINER
+       ========================================================================= -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+    <!-- DRIVER PORTAL VIEW -->
+    <div id="driver-view" class="space-y-10">
+      
+      <!-- HERO BANNER & LIVE FACILITY STATISTICS -->
+      <div class="relative overflow-hidden rounded-3xl glass-card p-6 sm:p-10 border border-white/10 shadow-2xl">
+        <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div class="absolute -left-20 -top-20 w-96 h-96 bg-teal-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+        <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+          
+          <!-- Headline -->
+          <div class="space-y-3 max-w-2xl">
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide uppercase">
+              <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+              <span>Live Real-Time Bay Telemetry</span>
+            </div>
+            <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+              Find, Reserve &amp; Park <br class="hidden sm:inline">
+              <span class="bg-gradient-to-r from-emerald-400 via-teal-300 to-cyan-400 bg-clip-text text-transparent">In Under 30 Seconds.</span>
+            </h1>
+            <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+              Skip circling around crowded lots. View real-time slot availability, reserve your designated bay before arrival, and manage digital passes with zero hassle.
+            </p>
+
+            <div class="pt-2 flex flex-wrap items-center gap-3">
+              <button onclick="document.getElementById('parking-grid-section').scrollIntoView({behavior: 'smooth'})" class="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-sm shadow-lg shadow-emerald-500/20 transition-all flex items-center space-x-2">
+                <i class="fa-solid fa-map-location-dot"></i>
+                <span>Browse Available Bays</span>
+              </button>
+              <button onclick="openCancelModal()" class="px-5 py-2.5 rounded-xl glass-card hover:bg-white/10 text-white font-semibold text-sm border border-white/10 transition-all flex items-center space-x-2">
+                <i class="fa-solid fa-ban text-rose-400"></i>
+                <span>Cancel Active Reservation</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Quick Telemetry Counters -->
+          <div class="grid grid-cols-2 gap-4 w-full lg:w-auto min-w-[320px]">
+            <div class="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center space-x-4">
+              <div class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300">
+                <i class="fa-solid fa-layer-group text-lg"></i>
+              </div>
+              <div>
+                <p class="text-xs text-slate-400 font-medium">Total Bays</p>
+                <div class="flex items-baseline space-x-1">
+                  <span id="stat-total" class="text-2xl font-black text-white font-mono">22</span>
+                  <span class="text-[11px] text-slate-500">slots</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center space-x-4">
+              <div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+                <i class="fa-solid fa-circle-check text-lg"></i>
+              </div>
+              <div>
+                <p class="text-xs text-emerald-300 font-medium">Vacant Now</p>
+                <div class="flex items-baseline space-x-1">
+                  <span id="stat-vacant" class="text-2xl font-black text-emerald-400 font-mono">14</span>
+                  <span class="text-[11px] text-emerald-500 font-semibold">ready</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center space-x-4">
+              <div class="w-12 h-12 rounded-xl bg-rose-500/20 flex items-center justify-center text-rose-400">
+                <i class="fa-solid fa-car-side text-lg"></i>
+              </div>
+              <div>
+                <p class="text-xs text-rose-300 font-medium">Occupied</p>
+                <div class="flex items-baseline space-x-1">
+                  <span id="stat-occupied" class="text-2xl font-black text-rose-400 font-mono">7</span>
+                  <span class="text-[11px] text-rose-500">parked</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="p-4 rounded-2xl bg-teal-500/10 border border-teal-500/20 flex items-center space-x-4">
+              <div class="w-12 h-12 rounded-xl bg-teal-500/20 flex items-center justify-center text-teal-400">
+                <i class="fa-solid fa-chart-pie text-lg"></i>
+              </div>
+              <div>
+                <p class="text-xs text-teal-300 font-medium">Occupancy</p>
+                <div class="flex items-baseline space-x-1">
+                  <span id="stat-occupancy" class="text-2xl font-black text-teal-400 font-mono">31.8%</span>
+                  <span class="text-[11px] text-teal-500 font-semibold">rate</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Occupancy Bar -->
+        <div class="mt-8 pt-6 border-t border-white/5 space-y-2">
+          <div class="flex items-center justify-between text-xs text-slate-400 font-mono">
+            <span>• Available: <span id="bar-lbl-avail" class="text-emerald-400 font-bold">14</span></span>
+            <span>• Occupied: <span id="bar-lbl-occ" class="text-rose-400 font-bold">7</span></span>
+            <span>• Maintenance: <span id="bar-lbl-maint" class="text-slate-400 font-bold">1</span></span>
+            <span class="text-emerald-400 font-semibold"><span id="bar-lbl-count">14</span> Slots Open for Booking</span>
+          </div>
+          <div class="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden flex">
+            <div id="bar-occ" class="bg-rose-500 transition-all duration-500" style="width: 32%;"></div>
+            <div id="bar-maint" class="bg-slate-500 transition-all duration-500" style="width: 4.5%;"></div>
+            <div id="bar-avail" class="bg-emerald-500 transition-all duration-500" style="width: 63.5%;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- FILTER TOOLBAR -->
+      <div id="parking-grid-section" class="glass-card rounded-2xl p-4 sm:p-5 border border-white/10 space-y-4">
+        <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+          <div class="flex items-center space-x-3 w-full md:w-auto">
+            <h2 class="text-lg font-bold text-white flex items-center space-x-2">
+              <i class="fa-solid fa-table-cells-large text-emerald-400"></i>
+              <span>Parking Bay Directory</span>
+            </h2>
+            <span id="filtered-count-badge" class="px-2.5 py-0.5 rounded-full bg-slate-800 text-xs font-mono text-slate-400 border border-white/10">22 bays</span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2.5 w-full md:w-auto">
+            <!-- Zone Filter -->
+            <select id="filter-zone" onchange="applyFilters()" class="bg-dark-900 border border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-slate-200 focus:outline-none focus:border-emerald-500">
+              <option value="all">📍 All Zones</option>
+              <option value="Ground">Zone: Ground Floor</option>
+              <option value="Floor 1">Zone: Floor 1</option>
+              <option value="Floor 2">Zone: Floor 2</option>
+            </select>
+
+            <!-- Status Filter -->
+            <select id="filter-status" onchange="applyFilters()" class="bg-dark-900 border border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-slate-200 focus:outline-none focus:border-emerald-500">
+              <option value="all">⚡ All Statuses</option>
+              <option value="AVAILABLE">🟢 Available Only</option>
+              <option value="OCCUPIED">🔴 Occupied</option>
+              <option value="MAINTENANCE">⚪ Maintenance</option>
+            </select>
+
+            <!-- Vehicle Filter -->
+            <select id="filter-vehicle" onchange="applyFilters()" class="bg-dark-900 border border-white/10 rounded-xl px-3 py-2 text-xs font-semibold text-slate-200 focus:outline-none focus:border-emerald-500">
+              <option value="all">🚗 All Vehicle Types</option>
+              <option value="CAR">Car</option>
+              <option value="SUV">SUV</option>
+              <option value="EV">Electric Vehicle (EV)</option>
+              <option value="BIKE">Motorbike</option>
+              <option value="HANDICAP">Handicap Priority</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- PARKING BAY GRID -->
+      <div id="slots-grid" class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+        <!-- Rendered dynamically via JavaScript -->
+      </div>
+    </div>
+
+    <!-- ADMIN COMMAND CENTER VIEW (Hidden by default) -->
+    <div id="admin-view" class="space-y-8 hidden">
+      <div class="glass-card rounded-3xl p-6 sm:p-8 border border-white/10 space-y-6">
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-amber-400/10 border border-amber-400/20 text-amber-400 text-xs font-semibold tracking-wide uppercase mb-2">
+              <i class="fa-solid fa-lock"></i>
+              <span>Executive Command Center</span>
+            </div>
+            <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Facility Telemetry &amp; Gate Control</h2>
+            <p class="text-xs sm:text-sm text-slate-400">Directly override slot occupancy, force release bays, or switch slots into maintenance.</p>
+          </div>
+          <button onclick="switchView('driver')" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white text-xs font-semibold transition-all">
+            &larr; Back to Driver Grid
+          </button>
+        </div>
+
+        <!-- Admin Table -->
+        <div class="overflow-x-auto rounded-2xl border border-white/10 bg-dark-900">
+          <table class="w-full text-left text-xs">
+            <thead class="bg-white/5 border-b border-white/10 text-slate-400 font-mono uppercase">
+              <tr>
+                <th class="p-3.5">Slot Code</th>
+                <th class="p-3.5">Zone</th>
+                <th class="p-3.5">Type</th>
+                <th class="p-3.5">Tariff</th>
+                <th class="p-3.5">Status</th>
+                <th class="p-3.5 text-right">Quick Action</th>
+              </tr>
+            </thead>
+            <tbody id="admin-table-body" class="divide-y divide-white/5 font-mono">
+              <!-- Rendered via JavaScript -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <!-- =========================================================================
+       BOOKING MODAL
+       ========================================================================= -->
+  <div id="booking-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="glass-card rounded-3xl p-6 sm:p-8 border border-white/10 max-w-lg w-full shadow-2xl space-y-6 relative">
+      <button onclick="closeBookingModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div>
+        <span class="text-xs font-mono uppercase tracking-wider text-emerald-400 font-bold">Fast-Track Reservation</span>
+        <h3 class="text-2xl font-black text-white">Reserve Bay <span id="modal-slot-code" class="text-emerald-400 font-mono">G-01</span></h3>
+        <p class="text-xs text-slate-400">Guaranteed lock with atomic slot reservation.</p>
+      </div>
+
+      <form id="booking-form" onsubmit="handleBookingSubmit(event)" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Driver Full Name</label>
+          <input type="text" id="input-driver-name" required placeholder="e.g. Alex Morgan" class="w-full bg-dark-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">License Plate Number</label>
+            <input type="text" id="input-plate" required placeholder="MH-09-AB-1234" class="w-full bg-dark-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-mono uppercase focus:outline-none focus:border-emerald-500">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Phone Number</label>
+            <input type="tel" id="input-phone" required placeholder="+91 98765 43210" class="w-full bg-dark-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+          </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Duration</label>
+            <select id="input-duration" class="w-full bg-dark-900 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+              <option value="1">1 Hour (₹40)</option>
+              <option value="2" selected>2 Hours (₹80)</option>
+              <option value="4">4 Hours (₹160)</option>
+              <option value="8">Full Day (₹300)</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1.5">Vehicle Type</label>
+            <select id="input-vehicle-type" class="w-full bg-dark-900 border border-white/10 rounded-xl px-3 py-2.5 text-sm text-white focus:outline-none focus:border-emerald-500">
+              <option value="CAR">Car</option>
+              <option value="SUV">SUV</option>
+              <option value="EV">Electric Vehicle (EV)</option>
+              <option value="BIKE">Motorbike</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="pt-2 flex items-center justify-end space-x-3">
+          <button type="button" onclick="closeBookingModal()" class="px-4 py-2.5 rounded-xl border border-white/10 text-slate-300 hover:text-white text-xs font-semibold">Cancel</button>
+          <button type="submit" class="px-6 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20">
+            Confirm &amp; Issue Ticket &rarr;
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       TICKET CONFIRMATION MODAL
+       ========================================================================= -->
+  <div id="ticket-modal" class="fixed inset-0 z-50 bg-slate-950/85 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="glass-card rounded-3xl p-6 sm:p-8 border border-emerald-500/30 max-w-md w-full shadow-2xl space-y-6 text-center relative">
+      <button onclick="closeTicketModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div class="w-14 h-14 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-2xl mx-auto border border-emerald-500/30">
+        <i class="fa-solid fa-circle-check"></i>
+      </div>
+
+      <div>
+        <h3 class="text-xl font-black text-white">Booking Confirmed!</h3>
+        <p class="text-xs text-slate-400">Your digital parking boarding pass has been generated.</p>
+      </div>
+
+      <!-- Ticket Card -->
+      <div class="bg-dark-900 border border-white/10 rounded-2xl p-5 text-left space-y-4 font-mono text-xs">
+        <div class="flex justify-between items-center border-b border-white/10 pb-3">
+          <span class="text-slate-400">PASS REFERENCE</span>
+          <span id="ticket-ref" class="text-emerald-400 font-bold text-sm">PRK-849201</span>
+        </div>
+        <div class="grid grid-cols-2 gap-2 text-[11px]">
+          <div>
+            <span class="text-slate-500 block">DESIGNATED BAY</span>
+            <span id="ticket-bay" class="text-white font-bold text-base">G-01</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block">LICENSE PLATE</span>
+            <span id="ticket-plate" class="text-white font-bold text-base">MH-09-AB-1234</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block">DRIVER</span>
+            <span id="ticket-driver" class="text-slate-200">Alex Morgan</span>
+          </div>
+          <div>
+            <span class="text-slate-500 block">EST. DURATION</span>
+            <span id="ticket-duration" class="text-slate-200">2 Hours</span>
+          </div>
+        </div>
+
+        <!-- Simulated QR Barcode -->
+        <div class="pt-2 text-center border-t border-white/10">
+          <div class="inline-block p-2 bg-white rounded-lg">
+            <i class="fa-solid fa-qrcode text-slate-950 text-4xl"></i>
+          </div>
+          <span class="block text-[10px] text-slate-400 mt-1">Scan at boom barrier entrance</span>
+        </div>
+      </div>
+
+      <button onclick="closeTicketModal()" class="w-full py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20">
+        Done / Return to Grid
+      </button>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       CANCEL PASS MODAL
+       ========================================================================= -->
+  <div id="cancel-modal" class="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md hidden flex items-center justify-center p-4">
+    <div class="glass-card rounded-3xl p-6 sm:p-8 border border-white/10 max-w-md w-full shadow-2xl space-y-6 relative">
+      <button onclick="closeCancelModal()" class="absolute top-5 right-5 text-slate-400 hover:text-white text-lg">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+
+      <div>
+        <h3 class="text-2xl font-black text-white">Find or Cancel Reservation</h3>
+        <p class="text-xs text-slate-400">Enter your Reference ID or Vehicle Plate number to release your bay.</p>
+      </div>
+
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-slate-300 mb-1.5">Booking Reference or Plate</label>
+          <input type="text" id="cancel-search-input" placeholder="e.g. PRK-849201 or MH-09-AB-1234" class="w-full bg-dark-900 border border-white/10 rounded-xl px-4 py-2.5 text-sm text-white font-mono uppercase focus:outline-none focus:border-rose-500">
+        </div>
+        <button onclick="executeCancelBooking()" class="w-full py-2.5 rounded-xl bg-rose-500 hover:bg-rose-400 text-white font-bold text-xs shadow-lg shadow-rose-500/20">
+          Search &amp; Cancel Reservation
+        </button>
+        <p id="cancel-status-msg" class="text-xs text-center font-mono text-slate-400"></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- =========================================================================
+       FOOTER
+       ========================================================================= -->
+  <footer class="glass-nav border-t border-white/10 py-6 mt-12 text-center text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div>
+        SmartPark Live Telemetry Engine &bull; Part of Aditya Dange's Project Showcase
+      </div>
+      <div>
+        <a href="../../" class="text-emerald-400 hover:underline">Return to Project Hub &rarr;</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- =========================================================================
+       APPLICATION LOGIC SCRIPT
+       ========================================================================= -->
+  <script>
+    // Initial Bay Dataset
+    const initialBays = [
+      { id: 1, code: 'G-01', zone: 'Ground', type: 'CAR', status: 'AVAILABLE', tariff: 40, plate: '', driver: '' },
+      { id: 2, code: 'G-02', zone: 'Ground', type: 'CAR', status: 'OCCUPIED', tariff: 40, plate: 'MH-09-Q-7788', driver: 'Rahul S.' },
+      { id: 3, code: 'G-03', zone: 'Ground', type: 'SUV', status: 'AVAILABLE', tariff: 50, plate: '', driver: '' },
+      { id: 4, code: 'G-04', zone: 'Ground', type: 'EV', status: 'AVAILABLE', tariff: 60, plate: '', driver: '' },
+      { id: 5, code: 'G-05', zone: 'Ground', type: 'HANDICAP', status: 'AVAILABLE', tariff: 30, plate: '', driver: '' },
+      { id: 6, code: 'G-06', zone: 'Ground', type: 'BIKE', status: 'OCCUPIED', tariff: 20, plate: 'MH-09-AA-0909', driver: 'Vikram K.' },
+      { id: 7, code: 'F1-01', zone: 'Floor 1', type: 'CAR', status: 'AVAILABLE', tariff: 40, plate: '', driver: '' },
+      { id: 8, code: 'F1-02', zone: 'Floor 1', type: 'CAR', status: 'OCCUPIED', tariff: 40, plate: 'DL-01-BK-4512', driver: 'Sneha P.' },
+      { id: 9, code: 'F1-03', zone: 'Floor 1', type: 'SUV', status: 'AVAILABLE', tariff: 50, plate: '', driver: '' },
+      { id: 10, code: 'F1-04', zone: 'Floor 1', type: 'EV', status: 'OCCUPIED', tariff: 60, plate: 'MH-12-EV-2024', driver: 'Anand T.' },
+      { id: 11, code: 'F1-05', zone: 'Floor 1', type: 'BIKE', status: 'AVAILABLE', tariff: 20, plate: '', driver: '' },
+      { id: 12, code: 'F1-06', zone: 'Floor 1', type: 'CAR', status: 'MAINTENANCE', tariff: 40, plate: '', driver: '' },
+      { id: 13, code: 'F2-01', zone: 'Floor 2', type: 'CAR', status: 'AVAILABLE', tariff: 40, plate: '', driver: '' },
+      { id: 14, code: 'F2-02', zone: 'Floor 2', type: 'CAR', status: 'AVAILABLE', tariff: 40, plate: '', driver: '' },
+      { id: 15, code: 'F2-03', zone: 'Floor 2', type: 'SUV', status: 'OCCUPIED', tariff: 50, plate: 'KA-03-MG-1122', driver: 'Deepak M.' },
+      { id: 16, code: 'F2-04', zone: 'Floor 2', type: 'EV', status: 'AVAILABLE', tariff: 60, plate: '', driver: '' },
+      { id: 17, code: 'F2-05', zone: 'Floor 2', type: 'HANDICAP', status: 'AVAILABLE', tariff: 30, plate: '', driver: '' },
+      { id: 18, code: 'F2-06', zone: 'Floor 2', type: 'BIKE', status: 'OCCUPIED', tariff: 20, plate: 'MH-09-ZZ-5555', driver: 'Sameer J.' },
+      { id: 19, code: 'F2-07', zone: 'Floor 2', type: 'CAR', status: 'AVAILABLE', tariff: 40, plate: '', driver: '' },
+      { id: 20, code: 'F2-08', zone: 'Floor 2', type: 'CAR', status: 'OCCUPIED', tariff: 40, plate: 'MH-14-BT-9999', driver: 'Pooja R.' },
+      { id: 21, code: 'F2-09', zone: 'Floor 2', type: 'SUV', status: 'AVAILABLE', tariff: 50, plate: '', driver: '' },
+      { id: 22, code: 'F2-10', zone: 'Floor 2', type: 'CAR', status: 'AVAILABLE', tariff: 40, plate: '', driver: '' }
+    ];
+
+    let bays = JSON.parse(localStorage.getItem('smartpark_bays')) || initialBays;
+    let selectedSlotId = null;
+
+    // Save & render
+    function saveBays() {
+      localStorage.setItem('smartpark_bays', JSON.stringify(bays));
+      updateStats();
+      renderGrid();
+      renderAdminTable();
+    }
+
+    function updateStats() {
+      const total = bays.length;
+      const vacant = bays.filter(b => b.status === 'AVAILABLE').length;
+      const occupied = bays.filter(b => b.status === 'OCCUPIED').length;
+      const maint = bays.filter(b => b.status === 'MAINTENANCE').length;
+      const rate = total > 0 ? ((occupied / total) * 100).toFixed(1) : 0;
+
+      document.getElementById('stat-total').textContent = total;
+      document.getElementById('stat-vacant').textContent = vacant;
+      document.getElementById('stat-occupied').textContent = occupied;
+      document.getElementById('stat-occupancy').textContent = rate + '%';
+
+      document.getElementById('bar-lbl-avail').textContent = vacant;
+      document.getElementById('bar-lbl-occ').textContent = occupied;
+      document.getElementById('bar-lbl-maint').textContent = maint;
+      document.getElementById('bar-lbl-count').textContent = vacant;
+
+      document.getElementById('bar-avail').style.width = ((vacant / total) * 100) + '%';
+      document.getElementById('bar-occ').style.width = ((occupied / total) * 100) + '%';
+      document.getElementById('bar-maint').style.width = ((maint / total) * 100) + '%';
+    }
+
+    function renderGrid() {
+      const grid = document.getElementById('slots-grid');
+      const zoneFilter = document.getElementById('filter-zone').value;
+      const statusFilter = document.getElementById('filter-status').value;
+      const vehicleFilter = document.getElementById('filter-vehicle').value;
+
+      const filtered = bays.filter(b => {
+        const mZone = zoneFilter === 'all' || b.zone === zoneFilter;
+        const mStatus = statusFilter === 'all' || b.status === statusFilter;
+        const mVeh = vehicleFilter === 'all' || b.type === vehicleFilter;
+        return mZone && mStatus && mVeh;
+      });
+
+      document.getElementById('filtered-count-badge').textContent = filtered.length + ' bays';
+
+      grid.innerHTML = filtered.map(bay => {
+        let statusStyle = 'glass-slot-available cursor-pointer';
+        let badgeColor = 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
+        let statusText = 'AVAILABLE';
+        let clickAction = `onclick="openBookingModal(${bay.id})"`;
+
+        if (bay.status === 'OCCUPIED') {
+          statusStyle = 'glass-slot-occupied cursor-not-allowed opacity-90';
+          badgeColor = 'bg-rose-500/20 text-rose-400 border-rose-500/30';
+          statusText = 'OCCUPIED';
+          clickAction = `onclick="alert('Bay ${bay.code} is currently occupied by vehicle ${bay.plate}.')"`;
+        } else if (bay.status === 'MAINTENANCE') {
+          statusStyle = 'glass-slot-maintenance cursor-not-allowed opacity-60';
+          badgeColor = 'bg-slate-500/20 text-slate-400 border-slate-500/30';
+          statusText = 'MAINTENANCE';
+          clickAction = `onclick="alert('Bay ${bay.code} is undergoing routine maintenance.')"`;
+        }
+
+        return `
+          <div ${clickAction} class="rounded-2xl p-4 transition-all duration-300 flex flex-col justify-between h-44 ${statusStyle}">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono font-semibold text-slate-400">${bay.zone}</span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full border ${badgeColor}">${statusText}</span>
+            </div>
+
+            <div class="text-center my-2">
+              <div class="text-2xl font-black font-mono tracking-tight text-white">${bay.code}</div>
+              <div class="text-[11px] font-medium text-slate-400 mt-1 flex items-center justify-center space-x-1">
+                <i class="fa-solid ${getVehicleIcon(bay.type)}"></i>
+                <span>${bay.type}</span>
+              </div>
+            </div>
+
+            <div class="pt-2 border-t border-white/5 flex items-center justify-between text-[11px] font-mono">
+              <span class="text-slate-500">₹${bay.tariff}/hr</span>
+              <span class="text-emerald-400 font-bold">${bay.status === 'AVAILABLE' ? 'Book &rarr;' : bay.plate || 'Busy'}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getVehicleIcon(type) {
+      switch(type) {
+        case 'CAR': return 'fa-car';
+        case 'SUV': return 'fa-truck-pickup';
+        case 'EV': return 'fa-bolt';
+        case 'BIKE': return 'fa-motorcycle';
+        case 'HANDICAP': return 'fa-wheelchair';
+        default: return 'fa-car';
+      }
+    }
+
+    function renderAdminTable() {
+      const tbody = document.getElementById('admin-table-body');
+      tbody.innerHTML = bays.map(bay => `
+        <tr class="hover:bg-white/5 transition-colors">
+          <td class="p-3.5 font-bold text-white">${bay.code}</td>
+          <td class="p-3.5 text-slate-400">${bay.zone}</td>
+          <td class="p-3.5 text-slate-300">${bay.type}</td>
+          <td class="p-3.5 text-slate-400">₹${bay.tariff}/hr</td>
+          <td class="p-3.5">
+            <span class="px-2 py-0.5 rounded text-[10px] font-bold ${
+              bay.status === 'AVAILABLE' ? 'bg-emerald-500/20 text-emerald-400' :
+              bay.status === 'OCCUPIED' ? 'bg-rose-500/20 text-rose-400' : 'bg-slate-500/20 text-slate-400'
+            }">${bay.status}</span>
+          </td>
+          <td class="p-3.5 text-right space-x-2">
+            ${bay.status === 'AVAILABLE' ? `
+              <button onclick="toggleBayStatus(${bay.id}, 'MAINTENANCE')" class="px-2.5 py-1 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px]">Set Maint</button>
+            ` : `
+              <button onclick="toggleBayStatus(${bay.id}, 'AVAILABLE')" class="px-2.5 py-1 rounded bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-400 text-[10px]">Free Bay</button>
+            `}
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function toggleBayStatus(id, newStatus) {
+      const b = bays.find(x => x.id === id);
+      if (b) {
+        b.status = newStatus;
+        if (newStatus === 'AVAILABLE') {
+          b.plate = '';
+          b.driver = '';
+        }
+        saveBays();
+      }
+    }
+
+    function applyFilters() {
+      renderGrid();
+    }
+
+    function openBookingModal(slotId) {
+      let bay = null;
+      if (slotId) {
+        bay = bays.find(b => b.id === slotId && b.status === 'AVAILABLE');
+      }
+      if (!bay) {
+        bay = bays.find(b => b.status === 'AVAILABLE');
+      }
+      if (!bay) {
+        alert('All parking bays are currently occupied!');
+        return;
+      }
+      selectedSlotId = bay.id;
+      document.getElementById('modal-slot-code').textContent = bay.code;
+      document.getElementById('booking-modal').classList.remove('hidden');
+    }
+
+    function closeBookingModal() {
+      document.getElementById('booking-modal').classList.add('hidden');
+    }
+
+    function quickBookFirstAvailable() {
+      openBookingModal();
+    }
+
+    function handleBookingSubmit(e) {
+      e.preventDefault();
+      const driver = document.getElementById('input-driver-name').value.trim();
+      const plate = document.getElementById('input-plate').value.trim().toUpperCase();
+      const duration = document.getElementById('input-duration').value;
+
+      const bay = bays.find(b => b.id === selectedSlotId);
+      if (bay) {
+        bay.status = 'OCCUPIED';
+        bay.plate = plate;
+        bay.driver = driver;
+
+        const ref = 'PRK-' + Math.floor(100000 + Math.random() * 900000);
+
+        document.getElementById('ticket-ref').textContent = ref;
+        document.getElementById('ticket-bay').textContent = bay.code;
+        document.getElementById('ticket-plate').textContent = plate;
+        document.getElementById('ticket-driver').textContent = driver;
+        document.getElementById('ticket-duration').textContent = duration + ' Hours';
+
+        saveBays();
+        closeBookingModal();
+        document.getElementById('ticket-modal').classList.remove('hidden');
+      }
+    }
+
+    function closeTicketModal() {
+      document.getElementById('ticket-modal').classList.add('hidden');
+    }
+
+    function openCancelModal() {
+      document.getElementById('cancel-modal').classList.remove('hidden');
+      document.getElementById('cancel-status-msg').textContent = '';
+    }
+
+    function closeCancelModal() {
+      document.getElementById('cancel-modal').classList.add('hidden');
+    }
+
+    function executeCancelBooking() {
+      const query = document.getElementById('cancel-search-input').value.trim().toUpperCase();
+      const msg = document.getElementById('cancel-status-msg');
+
+      if (!query) {
+        msg.textContent = 'Please enter a valid Plate number.';
+        msg.className = 'text-xs text-center font-mono text-amber-400';
+        return;
+      }
+
+      const bay = bays.find(b => b.status === 'OCCUPIED' && (b.plate.toUpperCase().includes(query)));
+      if (bay) {
+        bay.status = 'AVAILABLE';
+        bay.plate = '';
+        bay.driver = '';
+        saveBays();
+        msg.textContent = `Reservation for bay ${bay.code} has been successfully cancelled and released!`;
+        msg.className = 'text-xs text-center font-mono text-emerald-400 font-bold';
+      } else {
+        msg.textContent = 'No active reservation found for this plate.';
+        msg.className = 'text-xs text-center font-mono text-rose-400';
+      }
+    }
+
+    function switchView(view) {
+      if (view === 'admin') {
+        document.getElementById('driver-view').classList.add('hidden');
+        document.getElementById('admin-view').classList.remove('hidden');
+        document.getElementById('nav-btn-admin').classList.add('bg-amber-400/20');
+        document.getElementById('nav-btn-driver').classList.remove('bg-emerald-500/10');
+      } else {
+        document.getElementById('admin-view').classList.add('hidden');
+        document.getElementById('driver-view').classList.remove('hidden');
+        document.getElementById('nav-btn-driver').classList.add('bg-emerald-500/10');
+        document.getElementById('nav-btn-admin').classList.remove('bg-amber-400/20');
+      }
+    }
+
+    // Init on load
+    updateStats();
+    renderGrid();
+    renderAdminTable();
+  </script>
+</body>
+</html>

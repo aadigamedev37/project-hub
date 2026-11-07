@@ -15,7 +15,7 @@
     "description": "Full-stack parking facility engine with real-time bay allocation, digital boarding passes, race-condition safe booking, and an executive telemetry command center.",
     "category": "Web Apps",
     "image": "assets/images/projects/smart-parking.png",
-    "liveUrl": "",
+    "liveUrl": "projects/smart-parking/index.html",
     "sourceUrl": "https://github.com/aadigamedev37/smart-parking-system",
     "featured": true
   },
