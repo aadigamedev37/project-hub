@@ -20,6 +20,26 @@
     "featured": true
   },
   {
+    "id": "player-behavior-segmentation",
+    "title": "Player Behavior Segmentation & Game Analytics",
+    "description": "Advanced Data Science capstone utilizing K-Means clustering, PCA dimensionality reduction, and game telemetry analytics to classify player populations into actionable behavioral cohorts.",
+    "category": "ADS Projects",
+    "image": "assets/images/projects/player-behavior-segmentation.png",
+    "liveUrl": "",
+    "sourceUrl": "https://github.com/aadigamedev37/ADST_FINAL_PROJECT",
+    "featured": false
+  },
+  {
+    "id": "instagram-reach-prediction",
+    "title": "Instagram Reach Prediction & Timing Recommendation",
+    "description": "Applied Data Science machine learning pipeline analyzing engagement dynamics, correlation heatmaps, and regression models to optimize social reach and posting schedules.",
+    "category": "ADS Projects",
+    "image": "assets/images/projects/instagram-reach-prediction.png",
+    "liveUrl": "",
+    "sourceUrl": "https://github.com/aadigamedev37/ADS-Instagram-Reach-Prediction",
+    "featured": false
+  },
+  {
     "id": "navrai-studio",
     "title": "NAVRAI Makeup & Beauty Studio",
     "description": "A website for my family’s makeup and beauty business.",
