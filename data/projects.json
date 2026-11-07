@@ -1,5 +1,15 @@
 [
   {
+    "id": "aditya-portfolio",
+    "title": "Aditya Dange // Gameplay Programmer",
+    "description": "Flagship interactive portfolio engineered with the visual fidelity, HUD telemetry, and mechanical polish of a Mythic-tier weapon skin. Showcasing combat systems, procedural tools, and Unity 6 / Unreal Engine 5 production showcases.",
+    "category": "Game Dev",
+    "image": "assets/images/projects/aditya-portfolio.png",
+    "liveUrl": "https://aadigamedev37.github.io/aditya-portfolio/",
+    "sourceUrl": "https://github.com/aadigamedev37/aditya-portfolio",
+    "featured": true
+  },
+  {
     "id": "smart-parking",
     "title": "Smart Parking Management System",
     "description": "Full-stack parking facility engine with real-time bay allocation, digital boarding passes, race-condition safe booking, and an executive telemetry command center.",
