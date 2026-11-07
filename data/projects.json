@@ -1,5 +1,15 @@
 [
   {
+    "id": "smart-parking",
+    "title": "Smart Parking Management System",
+    "description": "Full-stack parking facility engine with real-time bay allocation, digital boarding passes, race-condition safe booking, and an executive telemetry command center.",
+    "category": "Web Apps",
+    "image": "assets/images/projects/smart-parking.png",
+    "liveUrl": "",
+    "sourceUrl": "https://github.com/aadigamedev37/smart-parking-system",
+    "featured": true
+  },
+  {
     "id": "navrai-studio",
     "title": "NAVRAI Makeup & Beauty Studio",
     "description": "A website for my family’s makeup and beauty business.",
