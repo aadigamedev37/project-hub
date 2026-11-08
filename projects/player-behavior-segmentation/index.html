@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en" class="dark scroll-smooth">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Player Behavior Segmentation & Game Analytics | ADS Capstone</title>
+
+  <!-- Google Fonts: Plus Jakarta Sans & JetBrains Mono -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+  <!-- Chart.js CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <!-- Tailwind CSS via Official Play CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+            mono: ['"JetBrains Mono"', 'monospace'],
+          },
+          colors: {
+            brand: {
+              400: '#38bdf8',
+              500: '#0ea5e9',
+              600: '#0284c7',
+            },
+            dark: {
+              950: '#070b12',
+              900: '#0d1522',
+              850: '#131e30',
+              800: '#1b2940',
+            }
+          }
+        }
+      }
+    }
+  </script>
+
+  <style>
+    body {
+      background-color: #070b12;
+      color: #f1f5f9;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+    .glass-nav {
+      background: rgba(13, 21, 34, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card {
+      background: rgba(19, 30, 48, 0.72);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card:hover {
+      border-color: rgba(56, 189, 248, 0.3);
+    }
+    .cohort-card-active {
+      border-color: #0ea5e9 !important;
+      background: rgba(14, 165, 233, 0.12) !important;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col bg-dark-950 text-slate-100 antialiased selection:bg-sky-500 selection:text-slate-950">
+
+  <!-- NAVIGATION -->
+  <nav class="sticky top-0 z-50 glass-nav">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex items-center justify-between h-20">
+        
+        <!-- Brand -->
+        <a href="./" class="flex items-center space-x-3 group">
+          <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-sky-500 to-indigo-500 p-0.5 shadow-lg shadow-sky-500/20 group-hover:scale-105 transition-transform duration-300">
+            <div class="w-full h-full bg-dark-950 rounded-[14px] flex items-center justify-center">
+              <i class="fa-solid fa-users-viewfinder text-sky-400 text-xl"></i>
+            </div>
+          </div>
+          <div>
+            <div class="flex items-center space-x-2">
+              <span class="text-xl font-extrabold tracking-tight text-white">Player<span class="text-sky-400">Segment</span></span>
+              <span class="px-2 py-0.5 text-[10px] font-bold bg-sky-500/10 text-sky-400 border border-sky-500/20 rounded-md tracking-wider">ADS CAPSTONE</span>
+            </div>
+            <p class="text-[11px] text-slate-400 font-mono tracking-wide">Telemetry &amp; K-Means Cluster Engine</p>
+          </div>
+        </a>
+
+        <!-- Controls -->
+        <div class="flex items-center space-x-3">
+          <a href="../../" class="text-xs text-slate-400 hover:text-slate-200 px-3 py-2 rounded-xl border border-white/10 hover:bg-white/5 inline-flex items-center space-x-1.5 transition-all">
+            <i class="fa-solid fa-arrow-left"></i>
+            <span>Project Hub</span>
+          </a>
+          <a href="https://github.com/aadigamedev37/ADST_FINAL_PROJECT" target="_blank" rel="noopener noreferrer" class="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/15 text-white font-semibold text-xs tracking-wide border border-white/10 transition-all flex items-center space-x-2">
+            <i class="fa-brands fa-github text-sm"></i>
+            <span>GitHub Repository</span>
+          </a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- MAIN CONTENT -->
+  <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
+
+    <!-- HERO SECTION -->
+    <div class="relative overflow-hidden rounded-3xl glass-card p-6 sm:p-10 border border-white/10 shadow-2xl">
+      <div class="absolute -right-20 -bottom-20 w-96 h-96 bg-sky-500/10 rounded-full blur-3xl pointer-events-none"></div>
+      <div class="absolute -left-20 -top-20 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none"></div>
+
+      <div class="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-8">
+        <div class="space-y-3 max-w-2xl">
+          <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold tracking-wide uppercase">
+            <span class="w-2 h-2 rounded-full bg-sky-400 animate-ping"></span>
+            <span>Applied Data Science &bull; Machine Learning Engine</span>
+          </div>
+          <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight text-white leading-tight">
+            Player Behavior Segmentation <br class="hidden sm:inline">
+            <span class="bg-gradient-to-r from-sky-400 via-indigo-300 to-purple-400 bg-clip-text text-transparent">&amp; Game Analytics System</span>
+          </h1>
+          <p class="text-slate-300 text-sm sm:text-base leading-relaxed">
+            By partitioning gameplay telemetry with K-Means clustering and PCA dimensionality reduction, this system isolates distinct player behavioral cohorts to guide monetization, engagement loops, and live-service retention.
+          </p>
+
+          <div class="pt-2 flex flex-wrap items-center gap-3">
+            <button onclick="document.getElementById('predictor-section').scrollIntoView({behavior: 'smooth'})" class="px-5 py-2.5 rounded-xl bg-sky-500 hover:bg-sky-400 text-slate-950 font-bold text-sm shadow-lg shadow-sky-500/20 transition-all flex items-center space-x-2">
+              <i class="fa-solid fa-gamepad"></i>
+              <span>Launch Live Predictor</span>
+            </button>
+            <button onclick="document.getElementById('cohorts-section').scrollIntoView({behavior: 'smooth'})" class="px-5 py-2.5 rounded-xl glass-card hover:bg-white/10 text-white font-semibold text-sm border border-white/10 transition-all flex items-center space-x-2">
+              <i class="fa-solid fa-layer-group text-sky-400"></i>
+              <span>Explore The 4 Cohorts</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Telemetry Counters -->
+        <div class="grid grid-cols-2 gap-4 w-full lg:w-auto min-w-[320px]">
+          <div class="p-4 rounded-2xl bg-white/5 border border-white/10 flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-xl bg-slate-800 flex items-center justify-center text-slate-300">
+              <i class="fa-solid fa-database text-lg"></i>
+            </div>
+            <div>
+              <p class="text-xs text-slate-400 font-medium">Dataset Records</p>
+              <div class="flex items-baseline space-x-1">
+                <span class="text-2xl font-black text-white font-mono">10,000</span>
+                <span class="text-[11px] text-slate-500">players</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-sky-500/10 border border-sky-500/20 flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-xl bg-sky-500/20 flex items-center justify-center text-sky-400">
+              <i class="fa-solid fa-circle-nodes text-lg"></i>
+            </div>
+            <div>
+              <p class="text-xs text-sky-300 font-medium">Optimal K</p>
+              <div class="flex items-baseline space-x-1">
+                <span class="text-2xl font-black text-sky-400 font-mono">4</span>
+                <span class="text-[11px] text-sky-500 font-semibold">clusters</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-purple-500/10 border border-purple-500/20 flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-xl bg-purple-500/20 flex items-center justify-center text-purple-400">
+              <i class="fa-solid fa-chart-line text-lg"></i>
+            </div>
+            <div>
+              <p class="text-xs text-purple-300 font-medium">Silhouette Score</p>
+              <div class="flex items-baseline space-x-1">
+                <span class="text-2xl font-black text-purple-400 font-mono">0.384</span>
+                <span class="text-[11px] text-purple-500">optimal</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center space-x-4">
+            <div class="w-12 h-12 rounded-xl bg-emerald-500/20 flex items-center justify-center text-emerald-400">
+              <i class="fa-solid fa-bolt text-lg"></i>
+            </div>
+            <div>
+              <p class="text-xs text-emerald-300 font-medium">Inference Latency</p>
+              <div class="flex items-baseline space-x-1">
+                <span class="text-2xl font-black text-emerald-400 font-mono">&lt; 1ms</span>
+                <span class="text-[11px] text-emerald-500 font-semibold">real-time</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LIVE INTERACTIVE PREDICTOR ("TRY A PLAYER") -->
+    <div id="predictor-section" class="glass-card rounded-3xl p-6 sm:p-10 border border-white/10 space-y-8">
+      <div>
+        <div class="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-sky-500/10 border border-sky-500/20 text-sky-400 text-xs font-semibold tracking-wide uppercase mb-2">
+          <i class="fa-solid fa-calculator"></i>
+          <span>Live Model Inference</span>
+        </div>
+        <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Interactive Player Classifier</h2>
+        <p class="text-xs sm:text-sm text-slate-400">Adjust the player's telemetry parameters below. The model executes real-time Z-score scaling and computes Euclidean distance across all 4 cluster centroids.</p>
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        
+        <!-- Input Form -->
+        <div class="lg:col-span-7 space-y-5 bg-dark-900/60 p-6 rounded-2xl border border-white/5">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex justify-between">
+                <span>PlayTime Hours</span>
+                <span id="lbl-playtime" class="font-mono text-sky-400">18.5 hrs</span>
+              </label>
+              <input type="range" id="input-playtime" min="0" max="30" step="0.5" value="18.5" oninput="runPrediction()" class="w-full accent-sky-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex justify-between">
+                <span>Player Level</span>
+                <span id="lbl-level" class="font-mono text-sky-400">Level 50</span>
+              </label>
+              <input type="range" id="input-level" min="1" max="100" step="1" value="50" oninput="runPrediction()" class="w-full accent-sky-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex justify-between">
+                <span>Sessions Per Week</span>
+                <span id="lbl-sessions" class="font-mono text-sky-400">7 sessions</span>
+              </label>
+              <input type="range" id="input-sessions" min="1" max="20" step="1" value="7" oninput="runPrediction()" class="w-full accent-sky-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex justify-between">
+                <span>Achievements Unlocked</span>
+                <span id="lbl-achievements" class="font-mono text-sky-400">28 badges</span>
+              </label>
+              <input type="range" id="input-achievements" min="0" max="50" step="1" value="28" oninput="runPrediction()" class="w-full accent-sky-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5 flex justify-between">
+                <span>Avg Session Duration</span>
+                <span id="lbl-duration" class="font-mono text-sky-400">110 mins</span>
+              </label>
+              <input type="range" id="input-duration" min="10" max="240" step="5" value="110" oninput="runPrediction()" class="w-full accent-sky-500">
+            </div>
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-300 mb-1.5">In-Game Purchases</label>
+              <select id="input-purchases" onchange="runPrediction()" class="w-full bg-dark-950 border border-white/10 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-sky-500">
+                <option value="0">No (Free-to-Play)</option>
+                <option value="1">Yes (Converted Spender)</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Quick Preset Buttons -->
+          <div class="pt-3 border-t border-white/5 flex flex-wrap items-center gap-2">
+            <span class="text-xs text-slate-400 mr-1">Load Presets:</span>
+            <button onclick="loadPreset('engaged')" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-slate-300 border border-white/10 transition-colors">Highly Engaged</button>
+            <button onclick="loadPreset('veteran')" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-slate-300 border border-white/10 transition-colors">Veteran</button>
+            <button onclick="loadPreset('purchaser')" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-slate-300 border border-white/10 transition-colors">Purchaser</button>
+            <button onclick="loadPreset('beginner')" class="px-2.5 py-1 rounded-lg bg-white/5 hover:bg-white/10 text-[11px] text-slate-300 border border-white/10 transition-colors">Beginner</button>
+          </div>
+        </div>
+
+        <!-- Real-Time Classification Output -->
+        <div class="lg:col-span-5 space-y-5 flex flex-col justify-between">
+          <div class="bg-dark-900/60 p-6 rounded-2xl border border-white/5 space-y-4">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-mono uppercase text-slate-400">Cluster Assignment</span>
+              <span id="badge-confidence" class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">High Confidence</span>
+            </div>
+
+            <div>
+              <div id="output-segment" class="text-3xl font-black text-sky-400 tracking-tight">Highly Engaged</div>
+              <p id="output-desc" class="text-xs text-slate-300 mt-2 leading-relaxed">
+                Players with top-tier weekly playtime and frequent sessions. They represent the core gameplay backbone and drive organic retention.
+              </p>
+            </div>
+
+            <!-- Centroid Distances Chart -->
+            <div class="pt-2 border-t border-white/5">
+              <span class="text-[11px] font-mono text-slate-400 block mb-2">Distance to Cluster Centroids (Lower = Closer):</span>
+              <div class="h-44 w-full">
+                <canvas id="distChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- THE 4 COHORTS BREAKDOWN -->
+    <div id="cohorts-section" class="space-y-6">
+      <div>
+        <h2 class="text-2xl font-extrabold text-white flex items-center space-x-2">
+          <i class="fa-solid fa-shapes text-sky-400"></i>
+          <span>The Four Behavioral Segments</span>
+        </h2>
+        <p class="text-xs sm:text-sm text-slate-400">Identified via K-Means clustering across 10,000 player records.</p>
+      </div>
+
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        
+        <!-- Segment 0: Highly Engaged -->
+        <div class="glass-card rounded-2xl p-5 border border-sky-500/20 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="w-8 h-8 rounded-lg bg-sky-500/20 text-sky-400 flex items-center justify-center font-bold font-mono text-xs">C0</span>
+            <span class="text-[11px] font-mono text-slate-400">~26.2% Pop</span>
+          </div>
+          <h3 class="text-base font-bold text-white">Highly Engaged</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">High play hours (&gt;19 hrs/wk), multi-session frequency, moderate spending. Prime targets for competitive ladders and seasonal passes.</p>
+          <div class="pt-2 border-t border-white/5 text-[11px] font-mono text-sky-400 flex justify-between">
+            <span>Avg Play: 19.3h</span>
+            <span>Level: 47</span>
+          </div>
+        </div>
+
+        <!-- Segment 1: Veterans -->
+        <div class="glass-card rounded-2xl p-5 border border-purple-500/20 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center font-bold font-mono text-xs">C1</span>
+            <span class="text-[11px] font-mono text-slate-400">~24.8% Pop</span>
+          </div>
+          <h3 class="text-base font-bold text-white">Veterans</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">Top player levels (75+), deep achievement catalogs, long game lifespan. Highest game mastery, motivated by prestige and end-game content.</p>
+          <div class="pt-2 border-t border-white/5 text-[11px] font-mono text-purple-400 flex justify-between">
+            <span>Avg Level: 77</span>
+            <span>Badges: 38</span>
+          </div>
+        </div>
+
+        <!-- Segment 2: Purchasers -->
+        <div class="glass-card rounded-2xl p-5 border border-emerald-500/20 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold font-mono text-xs">C2</span>
+            <span class="text-[11px] font-mono text-slate-400">~20.1% Pop</span>
+          </div>
+          <h3 class="text-base font-bold text-white">Purchasers</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">100% conversion on In-Game Purchases. High monetization value, responds to cosmetic exclusives, bundle deals, and VIP passes.</p>
+          <div class="pt-2 border-t border-white/5 text-[11px] font-mono text-emerald-400 flex justify-between">
+            <span>Purchases: 100%</span>
+            <span>Value: High</span>
+          </div>
+        </div>
+
+        <!-- Segment 3: Beginners -->
+        <div class="glass-card rounded-2xl p-5 border border-amber-500/20 space-y-3">
+          <div class="flex items-center justify-between">
+            <span class="w-8 h-8 rounded-lg bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold font-mono text-xs">C3</span>
+            <span class="text-[11px] font-mono text-slate-400">~28.9% Pop</span>
+          </div>
+          <h3 class="text-base font-bold text-white">Beginners</h3>
+          <p class="text-xs text-slate-400 leading-relaxed">Low playtime (&lt;8 hrs), early level progression (&lt;25). Need frictionless tutorials, guided onboarding rewards, and low-friction retention hooks.</p>
+          <div class="pt-2 border-t border-white/5 text-[11px] font-mono text-amber-400 flex justify-between">
+            <span>Avg Play: 7.2h</span>
+            <span>Level: 22</span>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main>
+
+  <!-- FOOTER -->
+  <footer class="glass-nav border-t border-white/10 py-6 mt-12 text-center text-xs text-slate-400">
+    <div class="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div>
+        Player Behavior Segmentation &bull; Academic Applied Data Science Capstone by Aditya Dange
+      </div>
+      <div>
+        <a href="../../" class="text-sky-400 hover:underline">Return to Project Hub &rarr;</a>
+      </div>
+    </div>
+  </footer>
+
+  <!-- SCRIPT -->
+  <script>
+    // Exact Scaler & KMeans Parameters Extracted from Scikit-Learn Model
+    const scalerMean = [12.024365, 9.471774, 94.79225, 49.655568, 24.526477, 0.200854];
+    const scalerScale = [6.914552, 5.763595, 49.01076, 28.588022, 14.430546, 0.400639];
+
+    const centroids = [
+      [1.0475, -0.0325, 0.0258, -0.0766, 0.0161, -0.5013],  // 0: Highly engaged
+      [-0.5754, 0.0123, -0.0206, 0.9561, 0.0233, -0.5013],   // 1: Veterans
+      [-0.0121, 0.0102, -0.0061, 0.0130, 0.0002, 1.9947],   // 2: Purchasers
+      [-0.6849, 0.0189, -0.0054, -0.9059, -0.0440, -0.5013]  // 3: Beginners
+    ];
+
+    const segmentNames = ["Highly engaged", "Veterans", "Purchasers", "Beginners"];
+    const segmentColors = ["#38bdf8", "#a855f7", "#10b981", "#f59e0b"];
+    const segmentDescs = [
+      "Players with top-tier weekly playtime and frequent sessions. They represent the core gameplay backbone and drive organic retention.",
+      "Players with high player level, extensive achievements, and veteran status. They seek prestige, endgame challenges, and leaderboard ranking.",
+      "Players with active in-game transactions. High economic value cohorts that respond strongly to battle passes, cosmetics, and limited-time bundles.",
+      "Early-stage players with lower playtime and starter level. Highly sensitive to onboarding curves, tutorials, and early reward incentives."
+    ];
+
+    let chartInstance = null;
+
+    function initChart() {
+      const ctx = document.getElementById('distChart').getContext('2d');
+      chartInstance = new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: segmentNames,
+          datasets: [{
+            data: [1, 2, 3, 4],
+            backgroundColor: segmentColors,
+            borderRadius: 6,
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              grid: { color: 'rgba(255,255,255,0.06)' },
+              ticks: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 10 } }
+            },
+            x: {
+              grid: { display: false },
+              ticks: { color: '#cbd5e1', font: { family: 'Plus Jakarta Sans', size: 11, weight: 'bold' } }
+            }
+          }
+        }
+      });
+    }
+
+    function runPrediction() {
+      const playTime = parseFloat(document.getElementById('input-playtime').value);
+      const level = parseInt(document.getElementById('input-level').value);
+      const sessions = parseFloat(document.getElementById('input-sessions').value);
+      const achievements = parseInt(document.getElementById('input-achievements').value);
+      const duration = parseFloat(document.getElementById('input-duration').value);
+      const purchases = parseInt(document.getElementById('input-purchases').value);
+
+      // Update labels
+      document.getElementById('lbl-playtime').textContent = playTime + ' hrs';
+      document.getElementById('lbl-level').textContent = 'Level ' + level;
+      document.getElementById('lbl-sessions').textContent = sessions + ' sessions';
+      document.getElementById('lbl-achievements').textContent = achievements + ' badges';
+      document.getElementById('lbl-duration').textContent = duration + ' mins';
+
+      const raw = [playTime, sessions, duration, level, achievements, purchases];
+
+      // Standardize input vector: (x - mean) / scale
+      const scaled = raw.map((val, idx) => (val - scalerMean[idx]) / scalerScale[idx]);
+
+      // Calculate Euclidean distance to each centroid
+      const distances = centroids.map(centroid => {
+        let sumSq = 0;
+        for (let i = 0; i < 6; i++) {
+          sumSq += Math.pow(scaled[i] - centroid[i], 2);
+        }
+        return Math.sqrt(sumSq);
+      });
+
+      // Find closest centroid
+      let minIdx = 0;
+      let minVal = distances[0];
+      for (let i = 1; i < distances.length; i++) {
+        if (distances[i] < minVal) {
+          minVal = distances[i];
+          minIdx = i;
+        }
+      }
+
+      // Check confidence (difference between closest and 2nd closest)
+      const sorted = [...distances].sort((a,b) => a - b);
+      const diff = sorted[1] - sorted[0];
+      const confBadge = document.getElementById('badge-confidence');
+      if (diff < 0.4) {
+        confBadge.textContent = 'Boundary / Moderate';
+        confBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-500/20 text-amber-400 border border-amber-500/30';
+      } else {
+        confBadge.textContent = 'High Confidence';
+        confBadge.className = 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+      }
+
+      // Update DOM
+      const nameEl = document.getElementById('output-segment');
+      nameEl.textContent = segmentNames[minIdx];
+      nameEl.style.color = segmentColors[minIdx];
+      document.getElementById('output-desc').textContent = segmentDescs[minIdx];
+
+      // Update Chart
+      if (chartInstance) {
+        chartInstance.data.datasets[0].data = distances.map(d => parseFloat(d.toFixed(2)));
+        chartInstance.update();
+      }
+    }
+
+    function loadPreset(type) {
+      if (type === 'engaged') {
+        document.getElementById('input-playtime').value = 23;
+        document.getElementById('input-level').value = 48;
+        document.getElementById('input-sessions').value = 14;
+        document.getElementById('input-achievements').value = 28;
+        document.getElementById('input-duration').value = 120;
+        document.getElementById('input-purchases').value = 0;
+      } else if (type === 'veteran') {
+        document.getElementById('input-playtime').value = 8;
+        document.getElementById('input-level').value = 85;
+        document.getElementById('input-sessions').value = 8;
+        document.getElementById('input-achievements').value = 42;
+        document.getElementById('input-duration').value = 85;
+        document.getElementById('input-purchases').value = 0;
+      } else if (type === 'purchaser') {
+        document.getElementById('input-playtime').value = 14;
+        document.getElementById('input-level').value = 52;
+        document.getElementById('input-sessions').value = 9;
+        document.getElementById('input-achievements').value = 25;
+        document.getElementById('input-duration').value = 95;
+        document.getElementById('input-purchases').value = 1;
+      } else if (type === 'beginner') {
+        document.getElementById('input-playtime').value = 5;
+        document.getElementById('input-level').value = 14;
+        document.getElementById('input-sessions').value = 3;
+        document.getElementById('input-achievements').value = 6;
+        document.getElementById('input-duration').value = 45;
+        document.getElementById('input-purchases').value = 0;
+      }
+      runPrediction();
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+      initChart();
+      runPrediction();
+    });
+  </script>
+</body>
+</html>

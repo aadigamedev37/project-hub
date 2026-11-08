@@ -25,7 +25,7 @@
     "description": "Advanced Data Science capstone utilizing K-Means clustering, PCA dimensionality reduction, and game telemetry analytics to classify player populations into actionable behavioral cohorts.",
     "category": "ADS Projects",
     "image": "assets/images/projects/player-behavior-segmentation.png",
-    "liveUrl": "",
+    "liveUrl": "projects/player-behavior-segmentation/index.html",
     "sourceUrl": "https://github.com/aadigamedev37/ADST_FINAL_PROJECT",
     "featured": false
   },
@@ -35,7 +35,7 @@
     "description": "Applied Data Science machine learning pipeline analyzing engagement dynamics, correlation heatmaps, and regression models to optimize social reach and posting schedules.",
     "category": "ADS Projects",
     "image": "assets/images/projects/instagram-reach-prediction.png",
-    "liveUrl": "",
+    "liveUrl": "projects/instagram-reach-prediction/index.html",
     "sourceUrl": "https://github.com/aadigamedev37/ADS-Instagram-Reach-Prediction",
     "featured": false
   },
